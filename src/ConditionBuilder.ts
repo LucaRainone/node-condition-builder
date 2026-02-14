@@ -8,7 +8,7 @@ import { BetweenCondition } from './conditions/BetweenCondition.ts';
 import { InCondition } from './conditions/InCondition.ts';
 import { NullCondition } from './conditions/NullCondition.ts';
 
-export class ConditionBuilder {
+export class ConditionBuilder extends Condition {
   static DIALECT: DialectName = 'postgres';
 
   private conditions: Condition[] = [];
@@ -16,6 +16,7 @@ export class ConditionBuilder {
   private dialect: DialectName;
 
   constructor(mode: 'AND' | 'OR', dialect?: DialectName) {
+    super();
     this.mode = mode;
     this.dialect = dialect ?? ConditionBuilder.DIALECT;
   }
@@ -131,17 +132,24 @@ export class ConditionBuilder {
     return this;
   }
 
-  build(): string {
+  append(builder: ConditionBuilder): this {
+    this.conditions.push(builder);
+    return this;
+  }
+
+  build(): string;
+  build(startIndex: number, placeholder: (index: number) => string): string;
+  build(startIndex?: number, placeholder?: (index: number) => string): string {
     if (this.conditions.length === 0) {
       return this.mode === 'AND' ? '(TRUE)' : '(FALSE)';
     }
 
-    const placeholder = getPlaceholder(this.dialect);
-    let currentIndex = 1;
+    const ph = placeholder ?? getPlaceholder(this.dialect);
+    let currentIndex = startIndex ?? 1;
     const parts: string[] = [];
 
     for (const condition of this.conditions) {
-      parts.push(condition.build(currentIndex, placeholder));
+      parts.push(condition.build(currentIndex, ph));
       currentIndex += condition.getValues().length;
     }
 
