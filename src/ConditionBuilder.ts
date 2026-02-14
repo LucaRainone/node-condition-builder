@@ -5,6 +5,7 @@ import { Condition } from './conditions/Condition.ts';
 import { EqualCondition } from './conditions/EqualCondition.ts';
 import { ComparisonCondition } from './conditions/ComparisonCondition.ts';
 import { BetweenCondition } from './conditions/BetweenCondition.ts';
+import { InCondition } from './conditions/InCondition.ts';
 import { NullCondition } from './conditions/NullCondition.ts';
 
 export class ConditionBuilder {
@@ -67,6 +68,12 @@ export class ConditionBuilder {
       return this;
     }
     this.conditions.push(new BetweenCondition(field, from, to));
+    return this;
+  }
+
+  isIn(field: string, values: unknown[] | undefined): this {
+    if (values === undefined) return this;
+    this.conditions.push(new InCondition(field, values));
     return this;
   }
 
