@@ -24,6 +24,12 @@ export class ConditionBuilder {
     return new Expression(value);
   }
 
+  private addComparison(field: string, operator: string, value: unknown): this {
+    if (value === undefined) return this;
+    this.conditions.push(new ComparisonCondition(field, operator, value));
+    return this;
+  }
+
   isEqual(field: string, value: unknown): this {
     if (value === undefined) return this;
     this.conditions.push(new EqualCondition(field, value));
@@ -37,27 +43,43 @@ export class ConditionBuilder {
   }
 
   isGreater(field: string, value: unknown): this {
-    if (value === undefined) return this;
-    this.conditions.push(new ComparisonCondition(field, '>', value));
-    return this;
+    return this.addComparison(field, '>', value);
+  }
+
+  isNotGreater(field: string, value: unknown): this {
+    return this.addComparison(field, '<=', value);
   }
 
   isGreaterOrEqual(field: string, value: unknown): this {
-    if (value === undefined) return this;
-    this.conditions.push(new ComparisonCondition(field, '>=', value));
-    return this;
+    return this.addComparison(field, '>=', value);
+  }
+
+  isNotGreaterOrEqual(field: string, value: unknown): this {
+    return this.addComparison(field, '<', value);
   }
 
   isLess(field: string, value: unknown): this {
-    if (value === undefined) return this;
-    this.conditions.push(new ComparisonCondition(field, '<', value));
-    return this;
+    return this.addComparison(field, '<', value);
+  }
+
+  isNotLess(field: string, value: unknown): this {
+    return this.addComparison(field, '>=', value);
   }
 
   isLessOrEqual(field: string, value: unknown): this {
-    if (value === undefined) return this;
-    this.conditions.push(new ComparisonCondition(field, '<=', value));
-    return this;
+    return this.addComparison(field, '<=', value);
+  }
+
+  isNotLessOrEqual(field: string, value: unknown): this {
+    return this.addComparison(field, '>', value);
+  }
+
+  isLike(field: string, value: unknown): this {
+    return this.addComparison(field, 'LIKE', value);
+  }
+
+  isNotLike(field: string, value: unknown): this {
+    return this.addComparison(field, 'NOT LIKE', value);
   }
 
   private addBetween(field: string, from: unknown, to: unknown, negated: boolean): this {

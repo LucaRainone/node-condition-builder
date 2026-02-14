@@ -217,6 +217,50 @@ describe('ConditionBuilder', () => {
       assert.deepEqual(condition.getValues(), [50]);
     });
 
+    it('isNotGreater should generate <=', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isNotGreater('age', 65);
+      assert.equal(condition.build(), '(age <= $1)');
+      assert.deepEqual(condition.getValues(), [65]);
+    });
+
+    it('isNotGreaterOrEqual should generate <', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isNotGreaterOrEqual('age', 18);
+      assert.equal(condition.build(), '(age < $1)');
+      assert.deepEqual(condition.getValues(), [18]);
+    });
+
+    it('isNotLess should generate >=', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isNotLess('score', 0);
+      assert.equal(condition.build(), '(score >= $1)');
+      assert.deepEqual(condition.getValues(), [0]);
+    });
+
+    it('isNotLessOrEqual should generate >', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isNotLessOrEqual('score', 100);
+      assert.equal(condition.build(), '(score > $1)');
+      assert.deepEqual(condition.getValues(), [100]);
+    });
+
+    it('negated comparison with undefined should be ignored', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isNotGreater('a', undefined);
+      condition.isNotGreaterOrEqual('b', undefined);
+      condition.isNotLess('c', undefined);
+      condition.isNotLessOrEqual('d', undefined);
+      assert.equal(condition.build(), '(TRUE)');
+    });
+
+    it('negated comparison with Expression should work', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isNotGreater('date', condition.expression('NOW()'));
+      assert.equal(condition.build(), '(date <= NOW())');
+      assert.deepEqual(condition.getValues(), []);
+    });
+
     it('comparison methods should be chainable', () => {
       const condition = new ConditionBuilder('AND');
       const result = condition
@@ -227,6 +271,59 @@ describe('ConditionBuilder', () => {
         .build();
       assert.equal(result, '(a > $1 AND b < $2 AND c >= $3 AND d <= $4)');
       assert.deepEqual(condition.getValues(), [1, 10, 5, 20]);
+    });
+  });
+
+  describe('isLike / isNotLike', () => {
+    it('isLike should generate LIKE', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isLike('name', '%john%');
+      assert.equal(condition.build(), '(name LIKE $1)');
+      assert.deepEqual(condition.getValues(), ['%john%']);
+    });
+
+    it('isNotLike should generate NOT LIKE', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isNotLike('name', '%test%');
+      assert.equal(condition.build(), '(name NOT LIKE $1)');
+      assert.deepEqual(condition.getValues(), ['%test%']);
+    });
+
+    it('isLike with undefined should be ignored', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isLike('name', undefined);
+      assert.equal(condition.build(), '(TRUE)');
+    });
+
+    it('isNotLike with undefined should be ignored', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isNotLike('name', undefined);
+      assert.equal(condition.build(), '(TRUE)');
+    });
+
+    it('isLike with Expression should work', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isLike('name', condition.expression("CONCAT('%', other_col, '%')"));
+      assert.equal(condition.build(), "(name LIKE CONCAT('%', other_col, '%'))");
+      assert.deepEqual(condition.getValues(), []);
+    });
+
+    it('isLike should be chainable', () => {
+      const condition = new ConditionBuilder('AND');
+      const result = condition
+        .isEqual('active', true)
+        .isLike('name', '%john%')
+        .isNotLike('email', '%spam%')
+        .build();
+      assert.equal(result, '(active = $1 AND name LIKE $2 AND email NOT LIKE $3)');
+      assert.deepEqual(condition.getValues(), [true, '%john%', '%spam%']);
+    });
+
+    it('isLike with mysql should use ?', () => {
+      const condition = new ConditionBuilder('AND', 'mysql');
+      condition.isLike('name', '%john%');
+      assert.equal(condition.build(), '(name LIKE ?)');
+      assert.deepEqual(condition.getValues(), ['%john%']);
     });
   });
 
