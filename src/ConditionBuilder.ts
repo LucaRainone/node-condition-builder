@@ -3,6 +3,8 @@ import { Expression } from './Expression.ts';
 import { getPlaceholder } from './dialects.ts';
 import { Condition } from './conditions/Condition.ts';
 import { EqualCondition } from './conditions/EqualCondition.ts';
+import { ComparisonCondition } from './conditions/ComparisonCondition.ts';
+import { BetweenCondition } from './conditions/BetweenCondition.ts';
 import { NullCondition } from './conditions/NullCondition.ts';
 
 export class ConditionBuilder {
@@ -24,6 +26,47 @@ export class ConditionBuilder {
   isEqual(field: string, value: unknown): this {
     if (value === undefined) return this;
     this.conditions.push(new EqualCondition(field, value));
+    return this;
+  }
+
+  isGreater(field: string, value: unknown): this {
+    if (value === undefined) return this;
+    this.conditions.push(new ComparisonCondition(field, '>', value));
+    return this;
+  }
+
+  isGreaterOrEqual(field: string, value: unknown): this {
+    if (value === undefined) return this;
+    this.conditions.push(new ComparisonCondition(field, '>=', value));
+    return this;
+  }
+
+  isLess(field: string, value: unknown): this {
+    if (value === undefined) return this;
+    this.conditions.push(new ComparisonCondition(field, '<', value));
+    return this;
+  }
+
+  isLessOrEqual(field: string, value: unknown): this {
+    if (value === undefined) return this;
+    this.conditions.push(new ComparisonCondition(field, '<=', value));
+    return this;
+  }
+
+  isBetween(field: string, from: unknown, to: unknown): this {
+    if (from === null || to === null) {
+      throw new Error('isBetween does not accept null values, use undefined to skip a bound');
+    }
+    if (from === undefined && to === undefined) return this;
+    if (to === undefined) {
+      this.conditions.push(new ComparisonCondition(field, '>=', from));
+      return this;
+    }
+    if (from === undefined) {
+      this.conditions.push(new ComparisonCondition(field, '<=', to));
+      return this;
+    }
+    this.conditions.push(new BetweenCondition(field, from, to));
     return this;
   }
 

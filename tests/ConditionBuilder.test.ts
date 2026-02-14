@@ -22,6 +22,11 @@ describe('ConditionBuilder', () => {
   it('Undefined values should be ignored', () => {
     const condition = new ConditionBuilder('AND');
     condition.isEqual('id', undefined);
+    condition.isGreater('id', undefined);
+    condition.isLess('id', undefined);
+    condition.isLessOrEqual('id', undefined);
+    condition.isGreaterOrEqual('id', undefined);
+    condition.isBetween('id', undefined, undefined);
     condition.isNull('id', false);
     assert.equal(condition.build(), '(TRUE)');
     assert.deepEqual(condition.getValues(), []);
@@ -55,18 +60,23 @@ describe('ConditionBuilder', () => {
     assert.deepEqual(condition.getValues(), []);
   });
 
-  it('fill values should work with isEqual and isNull', () => {
+  it('fill values should work (requirements test)', () => {
     const condition = new ConditionBuilder('AND');
     condition.isEqual('id1', 1);
+    condition.isGreater('id2', 2);
+    condition.isLess('id3', 3);
+    condition.isLessOrEqual('id4', 4);
     condition.isEqual('date', condition.expression('NOW()'));
+    condition.isGreaterOrEqual('id5', 5);
+    condition.isBetween('id6', 6, 7);
     condition.isNull('id7', true);
     condition.isEqual('id8', 8);
 
     assert.equal(
       condition.build(),
-      '(id1 = $1 AND date = NOW() AND id7 IS NULL AND id8 = $2)',
+      '(id1 = $1 AND id2 > $2 AND id3 < $3 AND id4 <= $4 AND date = NOW() AND id5 >= $5 AND (id6 BETWEEN $6 AND $7) AND id7 IS NULL AND id8 = $8)',
     );
-    assert.deepEqual(condition.getValues(), [1, 8]);
+    assert.deepEqual(condition.getValues(), [1, 2, 3, 4, 5, 6, 7, 8]);
   });
 
   it('OR mode should join with OR', () => {
@@ -75,6 +85,107 @@ describe('ConditionBuilder', () => {
     condition.isEqual('b', 2);
     assert.equal(condition.build(), '(a = $1 OR b = $2)');
     assert.deepEqual(condition.getValues(), [1, 2]);
+  });
+
+  describe('isBetween', () => {
+    it('should generate BETWEEN when both values provided', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isBetween('age', 18, 65);
+      assert.equal(condition.build(), '((age BETWEEN $1 AND $2))');
+      assert.deepEqual(condition.getValues(), [18, 65]);
+    });
+
+    it('should generate >= when only from is provided', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isBetween('age', 18, undefined);
+      assert.equal(condition.build(), '(age >= $1)');
+      assert.deepEqual(condition.getValues(), [18]);
+    });
+
+    it('should generate <= when only to is provided', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isBetween('age', undefined, 65);
+      assert.equal(condition.build(), '(age <= $1)');
+      assert.deepEqual(condition.getValues(), [65]);
+    });
+
+    it('should be ignored when both undefined', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isBetween('age', undefined, undefined);
+      assert.equal(condition.build(), '(TRUE)');
+      assert.deepEqual(condition.getValues(), []);
+    });
+
+    it('should throw when from is null', () => {
+      const condition = new ConditionBuilder('AND');
+      assert.throws(() => condition.isBetween('age', null, 65), {
+        message: 'isBetween does not accept null values, use undefined to skip a bound',
+      });
+    });
+
+    it('should throw when to is null', () => {
+      const condition = new ConditionBuilder('AND');
+      assert.throws(() => condition.isBetween('age', 18, null), {
+        message: 'isBetween does not accept null values, use undefined to skip a bound',
+      });
+    });
+
+    it('should throw when both are null', () => {
+      const condition = new ConditionBuilder('AND');
+      assert.throws(() => condition.isBetween('age', null, null));
+    });
+
+    it('should be chainable', () => {
+      const condition = new ConditionBuilder('AND');
+      const result = condition
+        .isEqual('status', 'active')
+        .isBetween('age', 18, 65)
+        .build();
+      assert.equal(result, '(status = $1 AND (age BETWEEN $2 AND $3))');
+      assert.deepEqual(condition.getValues(), ['active', 18, 65]);
+    });
+  });
+
+  describe('comparison methods', () => {
+    it('isGreater should work', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isGreater('age', 18);
+      assert.equal(condition.build(), '(age > $1)');
+      assert.deepEqual(condition.getValues(), [18]);
+    });
+
+    it('isLess should work', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isLess('age', 65);
+      assert.equal(condition.build(), '(age < $1)');
+      assert.deepEqual(condition.getValues(), [65]);
+    });
+
+    it('isGreaterOrEqual should work', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isGreaterOrEqual('score', 100);
+      assert.equal(condition.build(), '(score >= $1)');
+      assert.deepEqual(condition.getValues(), [100]);
+    });
+
+    it('isLessOrEqual should work', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isLessOrEqual('score', 50);
+      assert.equal(condition.build(), '(score <= $1)');
+      assert.deepEqual(condition.getValues(), [50]);
+    });
+
+    it('comparison methods should be chainable', () => {
+      const condition = new ConditionBuilder('AND');
+      const result = condition
+        .isGreater('a', 1)
+        .isLess('b', 10)
+        .isGreaterOrEqual('c', 5)
+        .isLessOrEqual('d', 20)
+        .build();
+      assert.equal(result, '(a > $1 AND b < $2 AND c >= $3 AND d <= $4)');
+      assert.deepEqual(condition.getValues(), [1, 10, 5, 20]);
+    });
   });
 
   describe('chaining', () => {
