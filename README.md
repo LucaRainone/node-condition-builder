@@ -21,13 +21,13 @@ A **condition builder** -- it takes your filter parameters and produces a SQL co
 ## Install
 
 ```
-npm install js-condition-builder
+npm install node-condition-builder
 ```
 
 ## Quick start
 
 ```typescript
-import { ConditionBuilder } from 'js-condition-builder';
+import { ConditionBuilder } from 'node-condition-builder';
 
 const condition = new ConditionBuilder('AND')
   .isEqual('status', 'active')
