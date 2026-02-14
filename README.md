@@ -221,3 +221,11 @@ const condition = new ConditionBuilder('AND', 'mysql');
 ## Empty conditions
 
 An empty AND evaluates to `(TRUE)`, an empty OR to `(FALSE)`. This is safe to include in any query.
+
+## For LLMs / AI agents
+
+This package ships an `llm.md` file with a concise, token-friendly API reference designed for LLM consumption. If you're using an AI coding agent, instruct it to read the file:
+
+```
+node_modules/node-condition-builder/llm.md
+```
