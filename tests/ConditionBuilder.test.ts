@@ -396,6 +396,48 @@ describe('ConditionBuilder', () => {
       assert.equal(condition.build(), '(JSON_CONTAINS(data, ?, ?))');
       assert.deepEqual(condition.getValues(), ['key', 'val']);
     });
+
+    it('should skip when all values are undefined', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.raw('? > col', [undefined]);
+      assert.equal(condition.build(), '(TRUE)');
+      assert.deepEqual(condition.getValues(), []);
+    });
+
+    it('should skip when all values are undefined (multiple)', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.raw('? BETWEEN col1 AND ?', [undefined, undefined]);
+      assert.equal(condition.build(), '(TRUE)');
+      assert.deepEqual(condition.getValues(), []);
+    });
+
+    it('should throw when mixing undefined and defined values (defined first)', () => {
+      const condition = new ConditionBuilder('AND');
+      assert.throws(() => condition.raw('? BETWEEN col1 AND ?', [42, undefined]), {
+        message: 'raw() does not accept a mix of undefined and defined values',
+      });
+    });
+
+    it('should throw when mixing undefined and defined values (undefined first)', () => {
+      const condition = new ConditionBuilder('AND');
+      assert.throws(() => condition.raw('? BETWEEN col1 AND ?', [undefined, 42]), {
+        message: 'raw() does not accept a mix of undefined and defined values',
+      });
+    });
+
+    it('should still add static SQL without values', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.raw('active IS TRUE');
+      assert.equal(condition.build(), '(active IS TRUE)');
+      assert.deepEqual(condition.getValues(), []);
+    });
+
+    it('should still add when values is empty array', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.raw('active IS TRUE', []);
+      assert.equal(condition.build(), '(active IS TRUE)');
+      assert.deepEqual(condition.getValues(), []);
+    });
   });
 
   describe('chaining', () => {

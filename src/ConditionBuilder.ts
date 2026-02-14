@@ -93,6 +93,13 @@ export class ConditionBuilder extends Condition {
   }
 
   raw(sql: string, values?: unknown[]): this {
+    if (values !== undefined && values.length > 0) {
+      const undefinedCount = values.filter(v => v === undefined).length;
+      if (undefinedCount === values.length) return this;
+      if (undefinedCount > 0) {
+        throw new Error('raw() does not accept a mix of undefined and defined values');
+      }
+    }
     this.conditions.push(new RawCondition(sql, values));
     return this;
   }

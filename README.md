@@ -172,6 +172,14 @@ You can also use `raw()` without values for static fragments:
 condition.raw('active IS TRUE');
 ```
 
+`raw()` follows the same `undefined` philosophy as the rest of the builder. When all values in the array are `undefined`, the condition is skipped. When some are `undefined` and some are not, it throws an error (since partial replacement in arbitrary SQL is ambiguous). Static calls without values (or with an empty array) are always added:
+
+```typescript
+condition.raw('? BETWEEN col1 AND col2', [undefined]); // skipped (all undefined)
+condition.raw('? BETWEEN col1 AND ?', [42, undefined]); // throws Error
+condition.raw('active IS TRUE');                         // always added (no values)
+```
+
 Use `\?` to include a literal `?` without it being treated as a placeholder (useful for PostgreSQL's jsonb `?` operator):
 
 ```typescript
