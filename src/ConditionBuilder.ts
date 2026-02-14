@@ -21,14 +21,16 @@ export class ConditionBuilder {
     return new Expression(value);
   }
 
-  isEqual(field: string, value: unknown): void {
-    if (value === undefined) return;
+  isEqual(field: string, value: unknown): this {
+    if (value === undefined) return this;
     this.conditions.push(new EqualCondition(field, value));
+    return this;
   }
 
-  isNull(field: string, isNull?: boolean): void {
-    if (!isNull) return;
+  isNull(field: string, isNull?: boolean): this {
+    if (!isNull) return this;
     this.conditions.push(new NullCondition(field));
+    return this;
   }
 
   build(): string {
