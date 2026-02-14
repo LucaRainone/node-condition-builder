@@ -4,11 +4,13 @@ import { Expression } from '../Expression.ts';
 export class InCondition extends Condition {
   private field: string;
   private values: unknown[];
+  private negated: boolean;
 
-  constructor(field: string, values: unknown[]) {
+  constructor(field: string, values: unknown[], negated: boolean = false) {
     super();
     this.field = field;
     this.values = values;
+    this.negated = negated;
   }
 
   build(startIndex: number, placeholder: (index: number) => string): string {
@@ -22,7 +24,8 @@ export class InCondition extends Condition {
         currentIndex++;
       }
     }
-    return `${this.field} IN (${parts.join(', ')})`;
+    const op = this.negated ? 'NOT IN' : 'IN';
+    return `${this.field} ${op} (${parts.join(', ')})`;
   }
 
   getValues(): unknown[] {

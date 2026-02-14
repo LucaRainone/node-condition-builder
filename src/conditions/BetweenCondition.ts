@@ -5,12 +5,14 @@ export class BetweenCondition extends Condition {
   private field: string;
   private from: unknown;
   private to: unknown;
+  private negated: boolean;
 
-  constructor(field: string, from: unknown, to: unknown) {
+  constructor(field: string, from: unknown, to: unknown, negated: boolean = false) {
     super();
     this.field = field;
     this.from = from;
     this.to = to;
+    this.negated = negated;
   }
 
   build(startIndex: number, placeholder: (index: number) => string): string {
@@ -21,7 +23,8 @@ export class BetweenCondition extends Condition {
     const toStr = this.to instanceof Expression
       ? this.to.value
       : placeholder(toIndex);
-    return `(${this.field} BETWEEN ${fromStr} AND ${toStr})`;
+    const op = this.negated ? 'NOT BETWEEN' : 'BETWEEN';
+    return `(${this.field} ${op} ${fromStr} AND ${toStr})`;
   }
 
   getValues(): unknown[] {
