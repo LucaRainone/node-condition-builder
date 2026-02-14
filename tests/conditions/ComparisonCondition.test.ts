@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { ComparisonCondition } from '../../src/conditions/ComparisonCondition.ts';
 import { getPlaceholder } from '../../src/dialects.ts';
+import {Expression} from "../../src/Expression.ts";
 
 describe('ComparisonCondition', () => {
   const pgPlaceholder = getPlaceholder('postgres');
@@ -35,5 +36,10 @@ describe('ComparisonCondition', () => {
     const cond = new ComparisonCondition('id', '>', 5);
     assert.equal(cond.build(1, mysqlPlaceholder), 'id > ?');
     assert.deepEqual(cond.getValues(), [5]);
+  });
+  it('should build with Expression', () => {
+    const cond = new ComparisonCondition('date', '>', new Expression('NOW()'));
+    assert.equal(cond.build(1, pgPlaceholder), 'date > NOW()');
+    assert.deepEqual(cond.getValues(), []);
   });
 });

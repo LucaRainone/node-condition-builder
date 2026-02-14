@@ -1,4 +1,5 @@
 import { Condition } from './Condition.ts';
+import { Expression } from '../Expression.ts';
 
 export class BetweenCondition extends Condition {
   private field: string;
@@ -13,10 +14,20 @@ export class BetweenCondition extends Condition {
   }
 
   build(startIndex: number, placeholder: (index: number) => string): string {
-    return `(${this.field} BETWEEN ${placeholder(startIndex)} AND ${placeholder(startIndex + 1)})`;
+    const fromStr = this.from instanceof Expression
+      ? this.from.value
+      : placeholder(startIndex);
+    const toIndex = this.from instanceof Expression ? startIndex : startIndex + 1;
+    const toStr = this.to instanceof Expression
+      ? this.to.value
+      : placeholder(toIndex);
+    return `(${this.field} BETWEEN ${fromStr} AND ${toStr})`;
   }
 
   getValues(): unknown[] {
-    return [this.from, this.to];
+    const values: unknown[] = [];
+    if (!(this.from instanceof Expression)) values.push(this.from);
+    if (!(this.to instanceof Expression)) values.push(this.to);
+    return values;
   }
 }
