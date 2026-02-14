@@ -1,6 +1,6 @@
 {
   "name": "node-condition-builder",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A lightweight TypeScript library for building parameterized SQL WHERE clauses. It generates safe, injection-free condition strings with proper placeholder indexing for PostgreSQL and MySQL",
   "type": "module",
   "main": "dist/index.js",
