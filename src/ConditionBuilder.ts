@@ -7,6 +7,7 @@ import { ComparisonCondition } from './conditions/ComparisonCondition.ts';
 import { BetweenCondition } from './conditions/BetweenCondition.ts';
 import { InCondition } from './conditions/InCondition.ts';
 import { NullCondition } from './conditions/NullCondition.ts';
+import { RawCondition } from './conditions/RawCondition.ts';
 
 export class ConditionBuilder extends Condition {
   static DIALECT: DialectName = 'postgres';
@@ -81,6 +82,19 @@ export class ConditionBuilder extends Condition {
 
   isNotLike(field: string, value: unknown): this {
     return this.addComparison(field, 'NOT LIKE', value);
+  }
+
+  isILike(field: string, value: unknown): this {
+    return this.addComparison(field, 'ILIKE', value);
+  }
+
+  isNotILike(field: string, value: unknown): this {
+    return this.addComparison(field, 'NOT ILIKE', value);
+  }
+
+  raw(sql: string, values?: unknown[]): this {
+    this.conditions.push(new RawCondition(sql, values));
+    return this;
   }
 
   private addBetween(field: string, from: unknown, to: unknown, negated: boolean): this {

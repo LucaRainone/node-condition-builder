@@ -327,6 +327,77 @@ describe('ConditionBuilder', () => {
     });
   });
 
+  describe('isILike / isNotILike', () => {
+    it('isILike should generate ILIKE', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isILike('name', '%john%');
+      assert.equal(condition.build(), '(name ILIKE $1)');
+      assert.deepEqual(condition.getValues(), ['%john%']);
+    });
+
+    it('isNotILike should generate NOT ILIKE', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isNotILike('name', '%test%');
+      assert.equal(condition.build(), '(name NOT ILIKE $1)');
+      assert.deepEqual(condition.getValues(), ['%test%']);
+    });
+
+    it('isILike with undefined should be ignored', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isILike('name', undefined);
+      assert.equal(condition.build(), '(TRUE)');
+    });
+
+    it('isILike with Expression should work', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isILike('name', condition.expression("CONCAT('%', other_col, '%')"));
+      assert.equal(condition.build(), "(name ILIKE CONCAT('%', other_col, '%'))");
+      assert.deepEqual(condition.getValues(), []);
+    });
+  });
+
+  describe('raw', () => {
+    it('should add a raw SQL condition without values', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isEqual('id', 1);
+      condition.raw('active IS TRUE');
+      assert.equal(condition.build(), '(id = $1 AND active IS TRUE)');
+      assert.deepEqual(condition.getValues(), [1]);
+    });
+
+    it('should add a raw SQL condition with values', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.raw('ST_Distance(point, ?) < ?', [{ x: 1, y: 2 }, 100]);
+      assert.equal(condition.build(), '(ST_Distance(point, $1) < $2)');
+      assert.deepEqual(condition.getValues(), [{ x: 1, y: 2 }, 100]);
+    });
+
+    it('should track placeholder indexes with other conditions', () => {
+      const condition = new ConditionBuilder('AND');
+      condition.isEqual('name', 'test');
+      condition.raw('LENGTH(bio) > ?', [50]);
+      condition.isEqual('active', true);
+      assert.equal(condition.build(), '(name = $1 AND LENGTH(bio) > $2 AND active = $3)');
+      assert.deepEqual(condition.getValues(), ['test', 50, true]);
+    });
+
+    it('should be chainable', () => {
+      const result = new ConditionBuilder('AND')
+        .isEqual('id', 1)
+        .raw('score > ?', [100])
+        .isNull('deleted_at', true)
+        .build();
+      assert.equal(result, '(id = $1 AND score > $2 AND deleted_at IS NULL)');
+    });
+
+    it('should work with mysql dialect', () => {
+      const condition = new ConditionBuilder('AND', 'mysql');
+      condition.raw('JSON_CONTAINS(data, ?, ?)', ['key', 'val']);
+      assert.equal(condition.build(), '(JSON_CONTAINS(data, ?, ?))');
+      assert.deepEqual(condition.getValues(), ['key', 'val']);
+    });
+  });
+
   describe('chaining', () => {
     it('should chain multiple isEqual calls', () => {
       const condition = new ConditionBuilder('AND');
