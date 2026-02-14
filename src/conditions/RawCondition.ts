@@ -12,7 +12,8 @@ export class RawCondition extends Condition {
 
   build(startIndex: number, placeholder: (index: number) => string): string {
     let currentIndex = startIndex;
-    return this.sql.replace(/\?/g, () => {
+    return this.sql.replace(/\\\?|\?/g, (match) => {
+      if (match === '\\?') return '?';
       return placeholder(currentIndex++);
     });
   }

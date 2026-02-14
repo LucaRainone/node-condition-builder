@@ -126,6 +126,10 @@ Every method is chainable and returns `this`.
 |---|---|
 | `isLike(field, value)` | `field LIKE $1` |
 | `isNotLike(field, value)` | `field NOT LIKE $1` |
+| `isILike(field, value)` | `field ILIKE $1` |
+| `isNotILike(field, value)` | `field NOT ILIKE $1` |
+
+`ILIKE` is PostgreSQL-specific (case-insensitive LIKE).
 
 ### Null checks
 
@@ -147,6 +151,32 @@ const condition = new ConditionBuilder('AND')
 
 condition.build();     // (created_at = NOW() AND updated_at > NOW() - INTERVAL '1 day')
 condition.getValues(); // []
+```
+
+### Raw conditions
+
+Use `raw()` to inject an arbitrary SQL fragment as a condition. Use `?` as placeholder markers -- they will be replaced with the dialect's placeholders and values will be tracked:
+
+```typescript
+const condition = new ConditionBuilder('AND')
+  .isEqual('name', 'test')
+  .raw('ST_Distance(point, ?) < ?', [somePoint, 100]);
+
+condition.build();     // (name = $1 AND ST_Distance(point, $2) < $3)
+condition.getValues(); // ['test', somePoint, 100]
+```
+
+You can also use `raw()` without values for static fragments:
+
+```typescript
+condition.raw('active IS TRUE');
+```
+
+Use `\?` to include a literal `?` without it being treated as a placeholder (useful for PostgreSQL's jsonb `?` operator):
+
+```typescript
+condition.raw('data::jsonb \\? ? AND active = ?', ['key', true]);
+// → data::jsonb ? $1 AND active = $2
 ```
 
 ### Nesting with `append`
