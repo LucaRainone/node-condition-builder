@@ -111,7 +111,7 @@ Every method is chainable and returns `this`.
 | `isBetween(field, from, to)` | `(field BETWEEN $1 AND $2)` |
 | `isNotBetween(field, from, to)` | `(field NOT BETWEEN $1 AND $2)` |
 
-`isBetween` supports partial bounds: if only `from` is provided it becomes `>=`, if only `to` it becomes `<=`. Passing `null` throws an error (use `undefined` to skip a bound).
+`isBetween` supports partial bounds: if only `from` is provided it becomes `>=`, if only `to` it becomes `<=`. Use `undefined` to skip a bound.
 
 ### Inclusion
 
@@ -205,6 +205,26 @@ condition.getValues(); // [true, 'admin', 'editor']
 ```
 
 Nesting is recursive -- you can nest as deep as you need.
+
+## Value types
+
+The library exports three types that constrain what values each method accepts:
+
+```typescript
+import type { SqlValue, ConditionValue, ConditionValueOrUndefined } from 'node-condition-builder';
+
+type SqlValue = string | number | boolean | bigint | Date;
+type ConditionValue = SqlValue | Expression;
+type ConditionValueOrUndefined = ConditionValue | undefined;
+```
+
+| Type | Used in |
+|---|---|
+| `ConditionValueOrUndefined` | Most methods: `isEqual`, `isGreater`, `isLike`, `isBetween`, etc. |
+| `ConditionValue[]` | `isIn`, `isNotIn` (the array itself can be `undefined` to skip) |
+| `unknown[]` | `raw()` values (escape hatch: accepts any value the DB driver supports) |
+
+`undefined` means "filter not provided" and silently skips the condition. `null` is not accepted -- use `isNull()` / `isNotNull()` for NULL checks, or `expression('NULL')` in raw SQL.
 
 ## Dialects
 

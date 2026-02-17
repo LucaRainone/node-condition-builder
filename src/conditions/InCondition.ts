@@ -1,12 +1,13 @@
+import type { ConditionValue } from '../types.ts';
 import { Condition } from './Condition.ts';
 import { Expression } from '../Expression.ts';
 
 export class InCondition extends Condition {
   private field: string;
-  private values: unknown[];
+  private values: ConditionValue[];
   private negated: boolean;
 
-  constructor(field: string, values: unknown[], negated: boolean = false) {
+  constructor(field: string, values: ConditionValue[], negated: boolean = false) {
     super();
     this.field = field;
     this.values = values;

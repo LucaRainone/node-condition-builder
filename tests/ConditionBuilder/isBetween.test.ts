@@ -33,6 +33,7 @@ describe('ConditionBuilder - isBetween', () => {
 
   it('should throw when from is null', () => {
     const condition = new ConditionBuilder('AND');
+    // @ts-expect-error testing runtime guard for JS consumers
     assert.throws(() => condition.isBetween('age', null, 65), {
       message: 'isBetween does not accept null values, use undefined to skip a bound',
     });
@@ -40,6 +41,7 @@ describe('ConditionBuilder - isBetween', () => {
 
   it('should throw when to is null', () => {
     const condition = new ConditionBuilder('AND');
+    // @ts-expect-error testing runtime guard for JS consumers
     assert.throws(() => condition.isBetween('age', 18, null), {
       message: 'isBetween does not accept null values, use undefined to skip a bound',
     });
@@ -47,6 +49,7 @@ describe('ConditionBuilder - isBetween', () => {
 
   it('should throw when both are null', () => {
     const condition = new ConditionBuilder('AND');
+    // @ts-expect-error testing runtime guard for JS consumers
     assert.throws(() => condition.isBetween('age', null, null));
   });
 

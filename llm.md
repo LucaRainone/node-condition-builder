@@ -20,6 +20,19 @@ cb.getValues();  // values array: ['val1', 'val2']
 
 All methods are chainable. `undefined` values silently skip the condition (key feature for optional filters).
 
+## Value types
+
+```typescript
+type SqlValue = string | number | boolean | bigint | Date;
+type ConditionValue = SqlValue | Expression;
+type ConditionValueOrUndefined = ConditionValue | undefined;
+```
+
+- Most methods accept `ConditionValueOrUndefined`
+- `isIn`/`isNotIn` accept `ConditionValue[] | undefined`
+- `raw()` values accept `unknown[]` (escape hatch: any value the DB driver supports)
+- `null` is not accepted -- use `isNull()`/`isNotNull()` or `expression('NULL')`
+
 ## Methods
 
 ### Equality

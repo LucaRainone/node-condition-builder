@@ -1,13 +1,14 @@
+import type { ConditionValue } from '../types.ts';
 import { Condition } from './Condition.ts';
 import { Expression } from '../Expression.ts';
 
 export class BetweenCondition extends Condition {
   private field: string;
-  private from: unknown;
-  private to: unknown;
+  private from: ConditionValue;
+  private to: ConditionValue;
   private negated: boolean;
 
-  constructor(field: string, from: unknown, to: unknown, negated: boolean = false) {
+  constructor(field: string, from: ConditionValue, to: ConditionValue, negated: boolean = false) {
     super();
     this.field = field;
     this.from = from;

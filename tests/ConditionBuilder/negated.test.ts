@@ -85,6 +85,7 @@ describe('ConditionBuilder - negated methods', () => {
 
   it('isNotBetween should throw on null', () => {
     const condition = new ConditionBuilder('AND');
+    // @ts-expect-error testing runtime guard for JS consumers
     assert.throws(() => condition.isNotBetween('age', null, 65));
   });
 

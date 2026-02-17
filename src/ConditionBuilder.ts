@@ -1,4 +1,4 @@
-import type { DialectName } from './types.ts';
+import type { DialectName, ConditionValue, ConditionValueOrUndefined } from './types.ts';
 import { Expression } from './Expression.ts';
 import { getPlaceholder } from './dialects.ts';
 import { Condition } from './conditions/Condition.ts';
@@ -26,69 +26,69 @@ export class ConditionBuilder extends Condition {
     return new Expression(value);
   }
 
-  private addComparison(field: string, operator: string, value: unknown): this {
+  private addComparison(field: string, operator: string, value: ConditionValueOrUndefined): this {
     if (value === undefined) return this;
     this.conditions.push(new ComparisonCondition(field, operator, value));
     return this;
   }
 
-  isEqual(field: string, value: unknown): this {
+  isEqual(field: string, value: ConditionValueOrUndefined): this {
     if (value === undefined) return this;
     this.conditions.push(new EqualCondition(field, value));
     return this;
   }
 
-  isNotEqual(field: string, value: unknown): this {
+  isNotEqual(field: string, value: ConditionValueOrUndefined): this {
     if (value === undefined) return this;
     this.conditions.push(new EqualCondition(field, value, true));
     return this;
   }
 
-  isGreater(field: string, value: unknown): this {
+  isGreater(field: string, value: ConditionValueOrUndefined): this {
     return this.addComparison(field, '>', value);
   }
 
-  isNotGreater(field: string, value: unknown): this {
+  isNotGreater(field: string, value: ConditionValueOrUndefined): this {
     return this.addComparison(field, '<=', value);
   }
 
-  isGreaterOrEqual(field: string, value: unknown): this {
+  isGreaterOrEqual(field: string, value: ConditionValueOrUndefined): this {
     return this.addComparison(field, '>=', value);
   }
 
-  isNotGreaterOrEqual(field: string, value: unknown): this {
+  isNotGreaterOrEqual(field: string, value: ConditionValueOrUndefined): this {
     return this.addComparison(field, '<', value);
   }
 
-  isLess(field: string, value: unknown): this {
+  isLess(field: string, value: ConditionValueOrUndefined): this {
     return this.addComparison(field, '<', value);
   }
 
-  isNotLess(field: string, value: unknown): this {
+  isNotLess(field: string, value: ConditionValueOrUndefined): this {
     return this.addComparison(field, '>=', value);
   }
 
-  isLessOrEqual(field: string, value: unknown): this {
+  isLessOrEqual(field: string, value: ConditionValueOrUndefined): this {
     return this.addComparison(field, '<=', value);
   }
 
-  isNotLessOrEqual(field: string, value: unknown): this {
+  isNotLessOrEqual(field: string, value: ConditionValueOrUndefined): this {
     return this.addComparison(field, '>', value);
   }
 
-  isLike(field: string, value: unknown): this {
+  isLike(field: string, value: ConditionValueOrUndefined): this {
     return this.addComparison(field, 'LIKE', value);
   }
 
-  isNotLike(field: string, value: unknown): this {
+  isNotLike(field: string, value: ConditionValueOrUndefined): this {
     return this.addComparison(field, 'NOT LIKE', value);
   }
 
-  isILike(field: string, value: unknown): this {
+  isILike(field: string, value: ConditionValueOrUndefined): this {
     return this.addComparison(field, 'ILIKE', value);
   }
 
-  isNotILike(field: string, value: unknown): this {
+  isNotILike(field: string, value: ConditionValueOrUndefined): this {
     return this.addComparison(field, 'NOT ILIKE', value);
   }
 
@@ -104,13 +104,13 @@ export class ConditionBuilder extends Condition {
     return this;
   }
 
-  private addBetween(field: string, from: unknown, to: unknown, negated: boolean): this {
+  private addBetween(field: string, from: ConditionValueOrUndefined, to: ConditionValueOrUndefined, negated: boolean): this {
     if (from === null || to === null) {
       throw new Error('isBetween does not accept null values, use undefined to skip a bound');
     }
     if (from === undefined && to === undefined) return this;
     if (to === undefined) {
-      this.conditions.push(new ComparisonCondition(field, negated ? '<' : '>=', from));
+      this.conditions.push(new ComparisonCondition(field, negated ? '<' : '>=', from as ConditionValue));
       return this;
     }
     if (from === undefined) {
@@ -121,21 +121,21 @@ export class ConditionBuilder extends Condition {
     return this;
   }
 
-  isBetween(field: string, from: unknown, to: unknown): this {
+  isBetween(field: string, from: ConditionValueOrUndefined, to: ConditionValueOrUndefined): this {
     return this.addBetween(field, from, to, false);
   }
 
-  isNotBetween(field: string, from: unknown, to: unknown): this {
+  isNotBetween(field: string, from: ConditionValueOrUndefined, to: ConditionValueOrUndefined): this {
     return this.addBetween(field, from, to, true);
   }
 
-  isIn(field: string, values: unknown[] | undefined): this {
+  isIn(field: string, values: ConditionValue[] | undefined): this {
     if (values === undefined) return this;
     this.conditions.push(new InCondition(field, values));
     return this;
   }
 
-  isNotIn(field: string, values: unknown[] | undefined): this {
+  isNotIn(field: string, values: ConditionValue[] | undefined): this {
     if (values === undefined) return this;
     this.conditions.push(new InCondition(field, values, true));
     return this;

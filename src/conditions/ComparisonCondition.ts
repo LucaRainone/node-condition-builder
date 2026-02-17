@@ -1,12 +1,13 @@
+import type { ConditionValue } from '../types.ts';
 import { Condition } from './Condition.ts';
 import { Expression } from '../Expression.ts';
 
 export class ComparisonCondition extends Condition {
   private field: string;
   private operator: string;
-  private value: unknown;
+  private value: ConditionValue;
 
-  constructor(field: string, operator: string, value: unknown) {
+  constructor(field: string, operator: string, value: ConditionValue) {
     super();
     this.field = field;
     this.operator = operator;
